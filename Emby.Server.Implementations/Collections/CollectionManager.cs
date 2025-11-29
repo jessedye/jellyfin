@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
@@ -122,11 +124,16 @@ namespace Emby.Server.Implementations.Collections
 
         private IEnumerable<BoxSet> GetCollections(User user)
         {
-            var folder = GetCollectionsFolder(false).GetAwaiter().GetResult();
+            // Use direct database query instead of GetChildren to avoid slow visibility checks
+            // that were causing Collections library to hang. See: https://github.com/jellyfin/jellyfin/issues/15090
+            var query = new InternalItemsQuery(user)
+            {
+                IncludeItemTypes = new[] { BaseItemKind.BoxSet },
+                Recursive = true,
+                DtoOptions = new Dto.DtoOptions(false)
+            };
 
-            return folder is null
-                ? Enumerable.Empty<BoxSet>()
-                : folder.GetChildren(user, true).OfType<BoxSet>();
+            return _libraryManager.GetItemList(query).OfType<BoxSet>();
         }
 
         /// <inheritdoc />
