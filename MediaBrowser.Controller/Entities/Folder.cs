@@ -795,12 +795,10 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
-            {
-                Logger.LogDebug("Query requires post-filtering due to BoxSet query");
-                return true;
-            }
-
+            // Disabled for performance - BoxSet visibility is handled by the database query
+            // The previous implementation called IsVisibleStandalone on every BoxSet which
+            // recalculated user library folder IDs for each one, causing severe slowdowns.
+            // See: https://github.com/jellyfin/jellyfin/issues/15090
             return false;
         }
 
