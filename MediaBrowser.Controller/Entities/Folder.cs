@@ -869,7 +869,11 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
+            // Skip CollapseBoxSetItems check for CollectionFolder as it triggers
+            // expensive GetRecursiveChildren calls that cause Collections library to hang.
+            // The collapsing can be handled differently without requiring post-filtering.
+            // See: https://github.com/jellyfin/jellyfin/issues/15090
+            if (this is not ICollectionFolder && CollapseBoxSetItems(query, this, query.User, ConfigurationManager))
             {
                 Logger.LogDebug("Query requires post-filtering due to CollapseBoxSetItems");
                 return true;
