@@ -114,6 +114,9 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.tvfavoriteseries:
                     return GetFavoriteSeries(queryParent, user, query);
 
+                case CollectionType.boxsets:
+                    return GetBoxSets(user, query);
+
                 default:
                     {
                         if (queryParent is UserView)
@@ -204,6 +207,16 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private QueryResult<BaseItem> GetMovieCollections(User user, InternalItemsQuery query)
+        {
+            query.Parent = null;
+            query.IncludeItemTypes = new[] { BaseItemKind.BoxSet };
+            query.SetUser(user);
+            query.Recursive = true;
+
+            return _libraryManager.GetItemsResult(query);
+        }
+
+        private QueryResult<BaseItem> GetBoxSets(User user, InternalItemsQuery query)
         {
             query.Parent = null;
             query.IncludeItemTypes = new[] { BaseItemKind.BoxSet };
